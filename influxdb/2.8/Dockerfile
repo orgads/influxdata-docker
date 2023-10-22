@@ -6,7 +6,8 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get install -y --no-install-recommends \
       ca-certificates \
       curl \
-      gnupg && \
+      gnupg \
+      openssl && \
     # cleanup apt \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
