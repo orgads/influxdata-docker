@@ -6,6 +6,7 @@ RUN apk add --no-cache \
       ca-certificates \
       curl \
       gnupg \
+      openssl \
       run-parts \
       su-exec \
       tzdata && \
