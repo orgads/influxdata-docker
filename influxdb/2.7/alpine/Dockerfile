@@ -39,11 +39,11 @@ RUN case "$(apk --print-arch)" in \
       *) echo 'Unsupported architecture' && exit 1 ;; \
     esac && \
     export GNUPGHOME="$(mktemp -d)" && \
-    gpg --batch --keyserver keyserver.ubuntu.com --recv-keys \
+    gpg --batch --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys \
       # InfluxData Package Signing Key <support@influxdata.com>
       9D539D90D3328DC7D6C8D3B9D8FF8E1F7DF8B07E &&\
-    curl -fLO "https://dl.influxdata.com/influxdb/releases/influxdb2-${INFLUXDB_VERSION}_linux_${arch}.tar.gz" \
-         -fLO "https://dl.influxdata.com/influxdb/releases/influxdb2-${INFLUXDB_VERSION}_linux_${arch}.tar.gz.asc" && \
+    curl -kfLO "https://dl.influxdata.com/influxdb/releases/influxdb2-${INFLUXDB_VERSION}_linux_${arch}.tar.gz" \
+         -kfLO "https://dl.influxdata.com/influxdb/releases/influxdb2-${INFLUXDB_VERSION}_linux_${arch}.tar.gz.asc" && \
     gpg --batch --verify "influxdb2-${INFLUXDB_VERSION}_linux_${arch}.tar.gz.asc" \
                          "influxdb2-${INFLUXDB_VERSION}_linux_${arch}.tar.gz" && \
     tar xzf "influxdb2-${INFLUXDB_VERSION}_linux_${arch}.tar.gz" && \
@@ -54,26 +54,12 @@ RUN case "$(apk --print-arch)" in \
     influxd version
 
 # Install the influx CLI
+# https://github.com/influxdata/influx-cli/pull/543
 ENV INFLUX_CLI_VERSION 2.7.5
-RUN case "$(apk --print-arch)" in \
-      x86_64)  arch=amd64 ;; \
-      aarch64) arch=arm64 ;; \
-      *) echo 'Unsupported architecture' && exit 1 ;; \
-    esac && \
-    export GNUPGHOME="$(mktemp -d)" && \
-    gpg --batch --keyserver keyserver.ubuntu.com --recv-keys \
-      # InfluxData Package Signing Key <support@influxdata.com>
-      9D539D90D3328DC7D6C8D3B9D8FF8E1F7DF8B07E && \
-    curl -fLO "https://dl.influxdata.com/influxdb/releases/influxdb2-client-${INFLUX_CLI_VERSION}-linux-${arch}.tar.gz" \
-         -fLO "https://dl.influxdata.com/influxdb/releases/influxdb2-client-${INFLUX_CLI_VERSION}-linux-${arch}.tar.gz.asc" && \
-    gpg --batch --verify "influxdb2-client-${INFLUX_CLI_VERSION}-linux-${arch}.tar.gz.asc" \
-                         "influxdb2-client-${INFLUX_CLI_VERSION}-linux-${arch}.tar.gz" && \
-    tar xzf "influxdb2-client-${INFLUX_CLI_VERSION}-linux-${arch}.tar.gz" && \
-    cp influx /usr/local/bin/influx && \
-    rm -rf "influxdb2-client-${INFLUX_CLI_VERSION}-linux-${arch}" \
-           "influxdb2-client-${INFLUX_CLI_VERSION}-linux-${arch}.tar.gz" \
-           "influxdb2-client-${INFLUX_CLI_VERSION}-linux-${arch}.tar.gz.asc" && \
-    influx version
+RUN \
+  curl -kL -o /usr/local/bin/influx https://output.circle-artifacts.com/output/job/b26f2fd0-49ba-49a2-8a60-bdbfac3e59d5/artifacts/0/bin/linux/amd64/influx && \
+  chmod +x /usr/local/bin/influx && \
+  influx version
 
 # Create standard directories expected by the entry-point.
 RUN mkdir /docker-entrypoint-initdb.d && \
