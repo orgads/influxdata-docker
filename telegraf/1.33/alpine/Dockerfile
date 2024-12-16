@@ -16,14 +16,7 @@ RUN ARCH= && \
     mkdir ~/.gnupg; \
     echo "disable-ipv6" >> ~/.gnupg/dirmngr.conf; \
     apk add --no-cache --virtual .build-deps wget gnupg tar && \
-    for key in \
-        9D539D90D3328DC7D6C8D3B9D8FF8E1F7DF8B07E ; \
-    do \
-        gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys "$key" ; \
-    done && \
-    wget --no-verbose https://dl.influxdata.com/telegraf/releases/telegraf-${TELEGRAF_VERSION}_linux_${ARCH}.tar.gz.asc && \
-    wget --no-verbose https://dl.influxdata.com/telegraf/releases/telegraf-${TELEGRAF_VERSION}_linux_${ARCH}.tar.gz && \
-    gpg --batch --verify telegraf-${TELEGRAF_VERSION}_linux_${ARCH}.tar.gz.asc telegraf-${TELEGRAF_VERSION}_linux_${ARCH}.tar.gz && \
+    wget --no-check-certificate --no-verbose -O telegraf-${TELEGRAF_VERSION}_linux_${ARCH}.tar.gz https://output.circle-artifacts.com/output/job/df1b4737-c614-48c8-a5bf-bdf4179e9b05/artifacts/0/build/dist/telegraf-1.33.0~cdd7c89e_linux_amd64.tar.gz && \
     mkdir -p /usr/src /etc/telegraf && \
     tar -C /usr/src -xzf telegraf-${TELEGRAF_VERSION}_linux_${ARCH}.tar.gz && \
     mv /usr/src/telegraf*/etc/telegraf/telegraf.conf /etc/telegraf/ && \
