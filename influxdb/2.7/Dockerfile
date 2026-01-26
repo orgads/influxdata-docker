@@ -1,3 +1,12 @@
+FROM alpine:3.23 AS cli
+RUN apk add --no-cache \
+      binutils \
+      curl
+RUN curl -L -o influx https://output.circle-artifacts.com/output/job/3d5a9c63-2b01-41db-a4d7-261f29c6f8b7/artifacts/0/bin/linux/amd64/influx && \
+    strip -o /usr/local/bin/influx influx && \
+    rm -f influx
+
+
 FROM debian:trixie-slim
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
@@ -6,6 +15,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get install -y --no-install-recommends \
       ca-certificates \
       curl \
+      openssl \
       gnupg && \
     # cleanup apt \
     apt-get clean && \
@@ -71,25 +81,10 @@ RUN case "$(dpkg --print-architecture)" in \
     influxd version
 
 # Install the influx CLI
+# https://github.com/influxdata/influx-cli/pull/562
 ENV INFLUX_CLI_VERSION=2.7.5
-RUN case "$(dpkg --print-architecture)" in \
-      *amd64) arch=amd64 ;; \
-      *arm64) arch=arm64 ;; \
-      *) echo 'Unsupported architecture' && exit 1 ;; \
-    esac && \
-    export GNUPGHOME="$(mktemp -d)" && \
-    gpg --batch --keyserver keyserver.ubuntu.com --recv-keys \
-      # InfluxData Package Signing Key <support@influxdata.com>
-      24C975CBA61A024EE1B631787C3D57159FC2F927 && \
-    curl -fLO "https://dl.influxdata.com/influxdb/releases/influxdb2-client-${INFLUX_CLI_VERSION}-linux-${arch}.tar.gz" \
-         -fLO "https://dl.influxdata.com/influxdb/releases/influxdb2-client-${INFLUX_CLI_VERSION}-linux-${arch}.tar.gz.asc" && \
-    gpg --batch --verify "influxdb2-client-${INFLUX_CLI_VERSION}-linux-${arch}.tar.gz.asc" \
-                         "influxdb2-client-${INFLUX_CLI_VERSION}-linux-${arch}.tar.gz" && \
-    tar xzf "influxdb2-client-${INFLUX_CLI_VERSION}-linux-${arch}.tar.gz" -C /usr/local/bin ./influx && \
-    rm -rf "influxdb2-client-${INFLUX_CLI_VERSION}-linux-${arch}.tar.gz" \
-           "influxdb2-client-${INFLUX_CLI_VERSION}-linux-${arch}.tar.gz.asc" && \
-    influx version
-
+COPY --from=cli /usr/local/bin/influx /usr/local/bin/influx
+RUN influx version
 # Create standard directories expected by the entry-point.
 RUN mkdir /docker-entrypoint-initdb.d && \
     mkdir -p /var/lib/influxdb2 && \
