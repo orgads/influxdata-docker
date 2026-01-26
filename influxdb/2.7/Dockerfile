@@ -39,21 +39,13 @@ RUN groupadd -r influxdb --gid=1000 && \
     useradd -r -g influxdb --uid=1000 --create-home --home-dir=/home/influxdb --shell=/bin/bash influxdb
 
 # Install gosu for easy step-down from root
-ENV GOSU_VER 1.16
+ENV GOSU_VER=1.19-up-2
 RUN case "$(dpkg --print-architecture)" in \
       *amd64) arch=amd64 ;; \
       *arm64) arch=arm64 ;; \
       *) echo 'Unsupported architecture' && exit 1 ;; \
     esac && \
-    export GNUPGHOME="$(mktemp -d)" && \
-    gpg --batch --keyserver keyserver.ubuntu.com --recv-keys \
-      # Tianon Gravi <tianon@tianon.xyz> (gosu)
-      B42F6819007F00F88E364FD4036A9C25BF357DD4 && \
-    curl -fLo /usr/local/bin/gosu     "https://github.com/tianon/gosu/releases/download/$GOSU_VER/gosu-${arch}" \
-         -fLo /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VER/gosu-${arch}.asc" && \
-    gpg --batch --verify /usr/local/bin/gosu.asc \
-                         /usr/local/bin/gosu && \
-    rm -rf /usr/local/bin/gosu.asc && \
+    curl -fLo /usr/local/bin/gosu     "https://github.com/orgads/gosu/releases/download/$GOSU_VER/gosu-${arch}" && \
     chmod +x /usr/local/bin/gosu && \
     gosu --version && \
     gosu nobody true
