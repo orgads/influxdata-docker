@@ -58,7 +58,7 @@ RUN case "$(dpkg --print-architecture)" in \
       *) echo 'Unsupported architecture' && exit 1 ;; \
     esac && \
     export GNUPGHOME="$(mktemp -d)" && \
-    gpg --batch --keyserver keyserver.ubuntu.com --recv-keys \
+    gpg --batch --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys \
       # InfluxData Package Signing Key <support@influxdata.com>
       24C975CBA61A024EE1B631787C3D57159FC2F927 && \
     curl -fLO "https://dl.influxdata.com/influxdb/releases/v${INFLUXDB_VERSION}/influxdb2-${INFLUXDB_VERSION}_linux_${arch}.tar.gz" \
