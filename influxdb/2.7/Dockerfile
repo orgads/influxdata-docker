@@ -1,10 +1,15 @@
-FROM alpine:3.23 AS cli
+FROM alpine:3.23 AS bin
 RUN apk add --no-cache \
       binutils \
       curl
-RUN curl -L -o influx https://output.circle-artifacts.com/output/job/3d5a9c63-2b01-41db-a4d7-261f29c6f8b7/artifacts/0/bin/linux/amd64/influx && \
+# https://github.com/influxdata/influx-cli/pull/566
+RUN curl -L -o influx https://output.circle-artifacts.com/output/job/6993974b-0520-40d5-94b1-9e5b00114c6d/artifacts/0/bin/linux/amd64/influx && \
     strip -o /usr/local/bin/influx influx && \
     rm -f influx
+# https://github.com/influxdata/influxdb/pull/27296
+RUN curl -L -o influxd https://output.circle-artifacts.com/output/job/dd972ce0-964b-4ae2-9cb7-f2aa72de5e30/artifacts/0/bin/influxd_linux_amd64/influxd && \
+    strip -o /usr/local/bin/influxd influxd && \
+    rm -f influxd
 
 
 FROM debian:trixie-slim
@@ -43,30 +48,13 @@ RUN case "$(dpkg --print-architecture)" in \
 
 # Install the influxd server
 ENV INFLUXDB_VERSION 2.7.12
-RUN case "$(dpkg --print-architecture)" in \
-      *amd64) arch=amd64 ;; \
-      *arm64) arch=arm64 ;; \
-      *) echo 'Unsupported architecture' && exit 1 ;; \
-    esac && \
-    export GNUPGHOME="$(mktemp -d)" && \
-    gpg --batch --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys \
-      # InfluxData Package Signing Key <support@influxdata.com>
-      24C975CBA61A024EE1B631787C3D57159FC2F927 && \
-    curl -fLO "https://dl.influxdata.com/influxdb/releases/v${INFLUXDB_VERSION}/influxdb2-${INFLUXDB_VERSION}_linux_${arch}.tar.gz" \
-         -fLO "https://dl.influxdata.com/influxdb/releases/v${INFLUXDB_VERSION}/influxdb2-${INFLUXDB_VERSION}_linux_${arch}.tar.gz.asc" && \
-    gpg --batch --verify "influxdb2-${INFLUXDB_VERSION}_linux_${arch}.tar.gz.asc" \
-                         "influxdb2-${INFLUXDB_VERSION}_linux_${arch}.tar.gz" && \
-    tar xzf "influxdb2-${INFLUXDB_VERSION}_linux_${arch}.tar.gz" && \
-    cp "influxdb2-${INFLUXDB_VERSION}/usr/bin/influxd" /usr/local/bin/influxd && \
-    rm -rf "influxdb2-${INFLUXDB_VERSION}_linux_${arch}.tar.gz" \
-           "influxdb2-${INFLUXDB_VERSION}_linux_${arch}.tar.gz.asc" \
-           "influxdb2_linux_${arch}" && \
-    influxd version
+COPY --from=bin /usr/local/bin/influxd /usr/local/bin/influxd
+RUN influxd version
 
 # Install the influx CLI
 # https://github.com/influxdata/influx-cli/pull/562
 ENV INFLUX_CLI_VERSION 2.7.5
-COPY --from=cli /usr/local/bin/influx /usr/local/bin/influx
+COPY --from=bin /usr/local/bin/influx /usr/local/bin/influx
 RUN influx version
 # Create standard directories expected by the entry-point.
 RUN mkdir /docker-entrypoint-initdb.d && \
