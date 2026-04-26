@@ -2,12 +2,12 @@ FROM alpine:3.23 AS bin
 RUN apk add --no-cache \
       binutils \
       curl
-# https://github.com/influxdata/influx-cli/pull/566
-RUN curl -L -o influx https://output.circle-artifacts.com/output/job/6993974b-0520-40d5-94b1-9e5b00114c6d/artifacts/0/bin/linux/amd64/influx && \
+RUN curl -L https://dl.influxdata.com/influxdb/releases/influxdb2-client-2.8.0-linux-amd64.tar.gz \
+    | tar xz ./influx && \
     strip -o /usr/local/bin/influx influx && \
     rm -f influx
 # https://github.com/influxdata/influxdb/pull/27296
-RUN curl -L -o influxd https://output.circle-artifacts.com/output/job/dd972ce0-964b-4ae2-9cb7-f2aa72de5e30/artifacts/0/bin/influxd_linux_amd64/influxd && \
+RUN curl -L -o influxd https://output.circle-artifacts.com/output/job/cdb2a3c0-18ae-4204-b2e2-b2403ede55e1/artifacts/0/bin/influxd_linux_amd64/influxd && \
     strip -o /usr/local/bin/influxd influxd && \
     rm -f influxd
 
@@ -35,7 +35,7 @@ RUN groupadd -r influxdb --gid=1000 && \
     useradd -r -g influxdb --uid=1000 --create-home --home-dir=/home/influxdb --shell=/bin/bash influxdb
 
 # Install gosu for easy step-down from root
-ENV GOSU_VER=1.19-up-2
+ENV GOSU_VER=1.19-up-3
 RUN case "$(dpkg --print-architecture)" in \
       *amd64) arch=amd64 ;; \
       *arm64) arch=arm64 ;; \
@@ -52,8 +52,7 @@ COPY --from=bin /usr/local/bin/influxd /usr/local/bin/influxd
 RUN influxd version
 
 # Install the influx CLI
-# https://github.com/influxdata/influx-cli/pull/562
-ENV INFLUX_CLI_VERSION 2.7.5
+ENV INFLUX_CLI_VERSION=2.8.0
 COPY --from=bin /usr/local/bin/influx /usr/local/bin/influx
 RUN influx version
 # Create standard directories expected by the entry-point.
