@@ -7,7 +7,7 @@ RUN curl -L https://dl.influxdata.com/influxdb/releases/influxdb2-client-2.8.0-l
     strip -o /usr/local/bin/influx influx && \
     rm -f influx
 # https://github.com/influxdata/influxdb/pull/27296
-RUN curl -L -o influxd https://output.circle-artifacts.com/output/job/cdb2a3c0-18ae-4204-b2e2-b2403ede55e1/artifacts/0/bin/influxd_linux_amd64/influxd && \
+RUN curl -L -o influxd https://output.circle-artifacts.com/output/job/f6d3a157-43de-4ba6-ad06-337384e62169/artifacts/0/bin/influxd_linux_amd64/influxd && \
     strip -o /usr/local/bin/influxd influxd && \
     rm -f influxd
 
