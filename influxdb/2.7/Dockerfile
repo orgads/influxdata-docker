@@ -7,7 +7,7 @@ RUN curl -L https://dl.influxdata.com/influxdb/releases/influxdb2-client-2.8.0-l
     strip -o /usr/local/bin/influx influx && \
     rm -f influx
 # https://github.com/influxdata/influxdb/pull/27296
-RUN curl -L -o influxd https://output.circle-artifacts.com/output/job/f6d3a157-43de-4ba6-ad06-337384e62169/artifacts/0/bin/influxd_linux_amd64/influxd && \
+RUN curl -L -o influxd https://output.circle-artifacts.com/output/job/b56da94f-b8b5-4c58-be65-a8448562fdab/artifacts/0/bin/influxd_linux_amd64/influxd && \
     strip -o /usr/local/bin/influxd influxd && \
     rm -f influxd
 
@@ -27,7 +27,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     rm -rf /var/lib/apt/lists/*
 
 # Install dasel for configuration parsing
-RUN curl -fL "https://github.com/orgads/dasel/releases/download/v2.8.1-ac-3/dasel_linux_amd64.gz" | gzip -d > /usr/local/bin/dasel && \
+RUN curl -fL "https://github.com/orgads/dasel/releases/download/v2.8.1-ac-4/dasel_linux_amd64.gz" | gzip -d > /usr/local/bin/dasel && \
     chmod +x /usr/local/bin/dasel && \
     dasel --version
 
