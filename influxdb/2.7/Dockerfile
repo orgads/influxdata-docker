@@ -1,4 +1,4 @@
-FROM alpine:3.23 AS bin
+FROM alpine:3.24 AS bin
 RUN apk add --no-cache \
       binutils \
       curl
@@ -7,7 +7,7 @@ RUN curl -L https://dl.influxdata.com/influxdb/releases/influxdb2-client-2.8.0-l
     strip -o /usr/local/bin/influx influx && \
     rm -f influx
 # https://github.com/influxdata/influxdb/pull/27296
-RUN curl -L -o influxd https://output.circle-artifacts.com/output/job/b56da94f-b8b5-4c58-be65-a8448562fdab/artifacts/0/bin/influxd_linux_amd64/influxd && \
+RUN curl -L -o influxd https://output.circle-artifacts.com/output/job/57919f03-95f8-4fef-a320-e946c9eb5a83/artifacts/0/bin/influxd_linux_amd64/influxd && \
     strip -o /usr/local/bin/influxd influxd && \
     rm -f influxd
 
